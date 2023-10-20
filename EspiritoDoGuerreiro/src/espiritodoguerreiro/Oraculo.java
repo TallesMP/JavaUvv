@@ -10,12 +10,12 @@ public class Oraculo {
     }
     
     String prologoPerdedor() {
-        InOut.MsgDeInformacao("Vitória", "Parabéns, guerreiro! Você superou os desafios e se sagrou vencedor.");
+        InOut.MsgDeInformacao("Derrota", "Oh não! Infelizmente você foi derrotado por mim: O incrível Oráculo! Tente novamente.");
         return null;
     }
     
     String prologoVencedor() {
-        InOut.MsgDeInformacao("Derrota", "Oh não! Infelizmente você foi derrotado por mim: O incrível Oráculo! Tente novamente.");
+        InOut.MsgDeInformacao("Vitória", "Parabéns, guerreiro! Você superou os desafios e se sagrou vencedor.");
         return null;
     }
 
@@ -26,7 +26,9 @@ public class Oraculo {
     
     boolean loadLevel01() {
         int valor = (int)(Math.random() * 100);
+        System.out.println(valor);
         int escolha = InOut.leInt("Você tem " + this.warrior.qtdVidas + " vidas.\nEscolha um número de 0 a 100.");
+        boolean next_level = false;
         while (escolha != valor && this.warrior.qtdVidas > 0) {
             if (escolha < valor) {
                 this.warrior.qtdVidas--;
@@ -38,29 +40,18 @@ public class Oraculo {
             }
         }
 
-        if (this.warrior.qtdVidas == 0) {
-            if (this.decidirVidaExtra(this.warrior.vidaExtra())) {
-                if (escolha > valor) {
-                    escolha = InOut.leInt("Por mil raios e trovões!\nSeu pedido de misericórdia foi atendido e você tem uma vida extra.\nEscolha outro número maior.");
-                    if (escolha == valor) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                } else {
-                    escolha = InOut.leInt("Por mil raios e trovões!\nSeu pedido de misericórdia foi atendido e você tem uma vida extra.\nEscolha outro número menor.");
-                    if (escolha == valor) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-            } else {
-                return false;
-            }
+        if (this.warrior.qtdVidas > 0) {
+            next_level = true;
         } else {
-            return true;
+            if (this.decidirVidaExtra(this.warrior.vidaExtra())) {
+                escolha = InOut.leInt("Por mil raios e trovões!\nOs deuses ouviram seu pedido de misericórdia.\nVocê tem uma vida extra, escolha outro número.");
+                if (escolha == valor) {
+                    next_level = true;
+                }
+            }
         }
+
+        return next_level;
     }
     
     boolean loadLevel02() {
@@ -68,33 +59,34 @@ public class Oraculo {
         String[] options = {"PAR" , "IMPAR"}; 
         int esc_orac = (int)(Math.random() * 5);
         int esc_guer = (int)(Math.random() * 5);
-        boolean isEven = false;
-        int palpite = InOut.duasOpcoes("Palpite", "Seu número é " + esc_guer + ".\nVocê acha que a soma do meu número com o seu será par ou ímpar?", options);
+        boolean check_par = false;
+        boolean next_level = false;
         
         if ((esc_orac + esc_guer) % 2 == 0) {
-            isEven = true;
+            check_par = true;
         }
-    
+        System.out.println("Escolha do oraculo: " + esc_orac); // DEBUG
+        System.out.println(check_par); // DEBUG
 
-        if ((palpite == 1 && isEven) || (palpite == 2 && !isEven)) {
-            return true;
-        } else {
-            if (!this.warrior.reviveu) {
-                if(decidirVidaExtra(this.warrior.vidaExtra())) {
-                    palpite = InOut.duasOpcoes("Palpite", "Por mil raios e trovões!\nSeu pedido de misericórdia foi atendido e você tem uma vida extra.\nSeu número é " + esc_guer + ".\nVocê acha que a soma do meu número com o seu será par ou ímpar?", options);
-                    if ((palpite == 1 && isEven) || (palpite == 2 && !isEven)) {
-            return true;
-                    } else {
-                        return false;
-                    }
-                } else {
-                    return false;
+        int palpite = InOut.duasOpcoes("Palpite", "Seu número é " + esc_guer + ".\nVocê acha que a soma do meu número com o seu será par ou ímpar?", options);
+
+        
+        if (palpite == 1 && check_par) {
+            next_level = true;
+        } else if (palpite == 2 && !check_par) {
+            next_level = true;
+        } else if (!this.warrior.reviveu) {
+            if (this.decidirVidaExtra(this.warrior.vidaExtra())) {
+                palpite = InOut.duasOpcoes("Segunda chance", "Por mil raios e trovões!\nOs deuses ouviram seu pedido de misericórdia.\nVocê acha que a soma do meu número com o seu será par ou ímpar?", options);
+                if (palpite == 1 && check_par) {
+                next_level = true;
+                } else if (palpite == 2 && !check_par) {
+                next_level = true;
                 }
-            } else {
-                return false;
             }
         }
-
+    
+        return next_level;
     }
     
     boolean decidirVidaExtra(String frase) {
